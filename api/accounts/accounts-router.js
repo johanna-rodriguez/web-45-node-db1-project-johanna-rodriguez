@@ -1,38 +1,48 @@
 const router = require("express").Router();
+const md = require("./accounts-middleware");
+const Account = require("./accounts-model");
 
-router.get("/", (req, res, next) => {
+router.get("/", async (req, res, next) => {
   try {
-    res.json("get accounts");
+    const accounts = await Account.getAll();
+    res.json(accounts);
   } catch (err) {
     next(err);
   }
 });
 
-router.get("/:id", (req, res, next) => {
-  try {
-    res.json("get account by id");
-  } catch (err) {
-    next(err);
-  }
+router.get("/:id", md.checkAccountId, async (req, res, next) => {
+  res.json(req.account);
 });
 
-router.post("/", (req, res, next) => {
-  try {
-    res.json("post accounts");
-  } catch (err) {
-    next(err);
+router.post(
+  "/",
+  md.checkAccountPayload,
+  md.checkAccountNameUnique,
+  (req, res, next) => {
+    try {
+      res.json("post account");
+    } catch (err) {
+      next(err);
+    }
   }
-});
+);
 
-router.put("/:id", (req, res, next) => {
-  try {
-    res.json("update account");
-  } catch (err) {
-    next(err);
+router.put(
+  "/:id",
+  md.checkAccountId,
+  md.checkAccountPayload,
+  md.checkAccountNameUnique,
+  (req, res, next) => {
+    try {
+      res.json("update account");
+    } catch (err) {
+      next(err);
+    }
   }
-});
+);
 
-router.delete("/:id", (req, res, next) => {
+router.delete("/:id", md.checkAccountId, (req, res, next) => {
   try {
     res.json("delete accounts");
   } catch (err) {
@@ -40,8 +50,8 @@ router.delete("/:id", (req, res, next) => {
   }
 });
 
+// eslint-disable-next-line no-unused-vars
 router.use((err, req, res, next) => {
-  // eslint-disable-line
   res.status(err.status || 500).json({
     message: err.message,
   });
